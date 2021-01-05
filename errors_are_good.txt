@@ -1,0 +1,3 @@
+type of error: NameError (uninitialized constant DockingStation)
+file path of error: 4: from /Users/user1/.rvm/rubies/ruby-2.7.0/bin/irb:23:in `<main>'
+line no. error: 1: from (irb):1
