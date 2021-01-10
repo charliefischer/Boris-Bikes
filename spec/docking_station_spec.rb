@@ -15,52 +15,48 @@ describe DockingStation do
 
   describe '#release_bike' do
 
-    it 'releases a bike' do
-      bike = Bike.new
-      subject.dock(bike)
-      expect(subject.release_bike).to eq bike
+    let(:bike) { double :bike }
+    it 'release working bikes' do
+      bike1 = Bike.new
+      subject.dock (bike1)
+#      released_bike = subject.release_bike
+      expect(subject.release_bike).to eq bike1
     end
 
     it "doesn't release bikes when they are broken" do
-      bike = Bike.new
-      bike.report_broken
-      subject.dock(bike)
+      bike = double(:bike, broken?: true)
+      # allow(bike).to receive(:broken?).and_return(true)
+      subject.dock bike
       expect { subject.release_bike }.to raise_error 'No bikes available'
     end
-
-    # it 'releases working bikes' do
-    #   bike = subject.release_bike
-    #   expect(bike).to be_working
-    # end
 
     it 'raises an error when there are no bikes' do
       expect { subject.release_bike }.to raise_error 'No bikes available'
     end
   end
 
+  let(:bike) { double :bike }
+  it 'raises error when full capacity' do
+    subject.capacity.times { subject.dock double :bike }
+    expect { subject.dock double(:bike) }.to raise_error "No more spaces"
+  end
+
   it {is_expected.to respond_to(:dock).with(1).argument}
 
   it 'docks a bike and stores' do
-    bike = Bike.new
-    expect(subject.dock(bike)).to eq [bike]
+    bike = double(bike)
+    expect(subject.dock bike).to eq [bike]
   end
 
   it 'docks a bike even if broken' do
-    bike = Bike.new
-    bike.report_broken
+    bike = double(:bike, broken?: true)
     expect(subject.dock(bike)).to eq [bike]
-  end 
-
-  it 'raises error when full capacity' do
-    bike = Bike.new
-    subject.capacity.times { subject.dock Bike.new }
-    expect { subject.dock Bike.new }.to raise_error "No more spaces"
   end
 
   it {is_expected.to respond_to :bikes}
 
   it 'show me what you got' do
-    bike = Bike.new
+    bike = double(bike)
     subject.dock(bike)
     expect(subject.bikes).to eq [bike]
   end
@@ -75,7 +71,7 @@ describe DockingStation do
   # it {is_expected. to respond_to :empty?}
   it "should return true or false if station is empty" do
     expect(subject.send(:empty?)).to eq true
-    subject.dock(Bike.new)
+    subject.dock double(:bike)
     expect(subject.send(:empty?)).to eq false
   end
 
