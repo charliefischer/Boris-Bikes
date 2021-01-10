@@ -1,67 +1,82 @@
-require 'docking_station'
+require 'dockingstation'
 
 describe DockingStation do
-  it "checking release_bike method" do
-    expect(subject).to respond_to :release_bike
+
+  it 'changes the capacity of the station' do
+    station = DockingStation.new(30)
+    expect(station.capacity).to eq 30
   end
 
-  # it 'releases working bikes' do
-  #   bike = subject.release_bike
-  #   expect(bike).to be_working
-  # end
+  it 'has a default capacity when no argument is passed' do
+    expect(subject.capacity).to eq DockingStation::DEFAULT_CAPACITY
+  end
 
-  it 'docks something' do
+  it {is_expected.to respond_to(:release_bike)}
+
+  describe '#release_bike' do
+
+    it 'releases a bike' do
+      bike = Bike.new
+      subject.dock(bike)
+      expect(subject.release_bike).to eq bike
+    end
+
+    it "doesn't release bikes when they are broken" do
+      bike = Bike.new
+      bike.report_broken
+      subject.dock(bike)
+      expect { subject.release_bike }.to raise_error 'No bikes available'
+    end
+
+    # it 'releases working bikes' do
+    #   bike = subject.release_bike
+    #   expect(bike).to be_working
+    # end
+
+    it 'raises an error when there are no bikes' do
+      expect { subject.release_bike }.to raise_error 'No bikes available'
+    end
+  end
+
+  it {is_expected.to respond_to(:dock).with(1).argument}
+
+  it 'docks a bike and stores' do
     bike = Bike.new
     expect(subject.dock(bike)).to eq [bike]
   end
 
-  it "returns docked bikes" do
+  it 'docks a bike even if broken' do
+    bike = Bike.new
+    bike.report_broken
+    expect(subject.dock(bike)).to eq [bike]
+  end 
+
+  it 'raises error when full capacity' do
+    bike = Bike.new
+    subject.capacity.times { subject.dock Bike.new }
+    expect { subject.dock Bike.new }.to raise_error "No more spaces"
+  end
+
+  it {is_expected.to respond_to :bikes}
+
+  it 'show me what you got' do
     bike = Bike.new
     subject.dock(bike)
     expect(subject.bikes).to eq [bike]
   end
 
-  it "releases a bikes" do
-    bike = Bike.new
-    subject.dock(bike)
-    expect(subject.bikes).to eq [bike]
+  # it { is_expected.to respond_to :full?}
+  it 'should return true or false if station is full' do
+    expect(subject.send(:full?)). to eq false
+     DockingStation::DEFAULT_CAPACITY.times {subject.dock Bike.new}
+    expect(subject.send(:full?)).to eq true
   end
 
-  it 'responds to bike' do
-    expect(subject).to respond_to :bikes
+  # it {is_expected. to respond_to :empty?}
+  it "should return true or false if station is empty" do
+    expect(subject.send(:empty?)).to eq true
+    subject.dock(Bike.new)
+    expect(subject.send(:empty?)).to eq false
   end
-
-  describe '#release_bike' do
-    it "raises an error when no bike in dock" do
-      expect { subject.release_bike }.to raise_error "No bikes available"
-    end
-  end
-
-  it "raises an error when limit is reached" do
-    bike = Bike.new
-    station = DockingStation.new
-    DockingStation::DEFAULT_CAPACITY.times {station.dock Bike.new }
-    expect {station.dock(bike)}.to raise_error "Limit reached"
-  end
-
-  it "set a @capacity instance variable" do
-    expect(subject.capacity).to eq DockingStation::DEFAULT_CAPACITY
-  end
-
-  it "test that the default capacity is 20" do
-    expect(subject.capacity).to eq DockingStation::DEFAULT_CAPACITY
-  end
-
-  describe 'initialization' do
-    it 'has a variable capacity' do
-      station = DockingStation.new(50)
-      bike = Bike.new
-      50.times {station.dock(bike)}
-      expect {station.dock(bike)}.to raise_error "Limit reached"
-    end
-  end
-
-
-
 
 end
